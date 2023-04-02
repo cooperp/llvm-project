@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "llvm/CodeGen/NonRelocatableStringpool.h"
+#include "llvm/DWARFLinker/NonRelocatableStringpool.h"
 #include "llvm/ADT/STLExtras.h"
 
 namespace llvm {

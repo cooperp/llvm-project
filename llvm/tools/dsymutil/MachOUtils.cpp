@@ -10,7 +10,7 @@
 #include "BinaryHolder.h"
 #include "DebugMap.h"
 #include "LinkUtils.h"
-#include "llvm/CodeGen/NonRelocatableStringpool.h"
+#include "llvm/DWARFLinker/NonRelocatableStringpool.h"
 #include "llvm/MC/MCAsmLayout.h"
 #include "llvm/MC/MCAssembler.h"
 #include "llvm/MC/MCMachObjectWriter.h"
