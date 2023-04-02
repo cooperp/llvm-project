@@ -9,11 +9,5 @@ add_llvm_component_library(LLVMDWARFLinkerParallel
   intrinsics_gen
 
   LINK_COMPONENTS
-  BinaryFormat
-  DebugInfoDWARF
-  AsmPrinter
-  CodeGen
-  MC
-  Object
   Support
 )

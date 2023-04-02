@@ -15,9 +15,7 @@ add_llvm_component_library(LLVMDWARFLinker
   BinaryFormat
   DebugInfoDWARF
   AsmPrinter
-  CodeGen
   MC
-  Object
   Support
   TargetParser
   )
