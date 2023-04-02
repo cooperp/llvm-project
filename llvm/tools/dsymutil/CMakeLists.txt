@@ -12,7 +12,6 @@ set(LLVM_LINK_COMPONENTS
   DWARFLinkerParallel
   MC
   Object
-  CodeGen
   Option
   Remarks
   Support
