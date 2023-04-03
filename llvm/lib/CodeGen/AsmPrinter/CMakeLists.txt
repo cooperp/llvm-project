@@ -32,6 +32,7 @@ add_llvm_component_library(LLVMAsmPrinter
 
   LINK_COMPONENTS
   Analysis
+  AsmEmitter
   BinaryFormat
   CodeGen
   Core

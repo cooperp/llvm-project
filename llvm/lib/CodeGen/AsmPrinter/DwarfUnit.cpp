@@ -1796,7 +1796,7 @@ void DwarfUnit::addSectionDelta(DIE &Die, dwarf::Attribute Attribute,
 
 void DwarfUnit::addSectionLabel(DIE &Die, dwarf::Attribute Attribute,
                                 const MCSymbol *Label, const MCSymbol *Sec) {
-  if (Asm->doesDwarfUseRelocationsAcrossSections())
+  if (Asm->Emitter->doesDwarfUseRelocationsAcrossSections())
     addLabel(Die, Attribute, DD->getDwarfSectionOffsetForm(), Label);
   else
     addSectionDelta(Die, Attribute, Label, Sec);
@@ -1819,7 +1819,7 @@ void DwarfTypeUnit::addGlobalType(const DIType *Ty, const DIE &Die,
 }
 
 const MCSymbol *DwarfUnit::getCrossSectionRelativeBaseAddress() const {
-  if (!Asm->doesDwarfUseRelocationsAcrossSections())
+  if (!Asm->Emitter->doesDwarfUseRelocationsAcrossSections())
     return nullptr;
   if (isDwoUnit())
     return nullptr;

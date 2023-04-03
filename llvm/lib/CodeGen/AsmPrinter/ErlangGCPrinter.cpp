@@ -73,14 +73,14 @@ void ErlangGCPrinter::finishAssembly(Module &M, GCModuleInfo &Info,
 
     // Emit PointCount.
     OS.AddComment("safe point count");
-    AP.emitInt16(MD.size());
+    AP.Emitter->emitInt16(MD.size());
 
     // And each safe point...
     for (const GCPoint &P : MD) {
       // Emit the address of the safe point.
       OS.AddComment("safe point address");
       MCSymbol *Label = P.Label;
-      AP.emitLabelPlusOffset(Label /*Hi*/, 0 /*Offset*/, 4 /*Size*/);
+      AP.Emitter->emitLabelPlusOffset(Label /*Hi*/, 0 /*Offset*/, 4 /*Size*/);
     }
 
     // Stack information never change in safe points! Only print info from the
@@ -89,7 +89,7 @@ void ErlangGCPrinter::finishAssembly(Module &M, GCModuleInfo &Info,
 
     // Emit the stack frame size.
     OS.AddComment("stack frame size (in words)");
-    AP.emitInt16(MD.getFrameSize() / IntPtrSize);
+    AP.Emitter->emitInt16(MD.getFrameSize() / IntPtrSize);
 
     // Emit stack arity, i.e. the number of stacked arguments.
     unsigned RegisteredArgs = IntPtrSize == 4 ? 5 : 6;
@@ -97,11 +97,11 @@ void ErlangGCPrinter::finishAssembly(Module &M, GCModuleInfo &Info,
                               ? MD.getFunction().arg_size() - RegisteredArgs
                               : 0;
     OS.AddComment("stack arity");
-    AP.emitInt16(StackArity);
+    AP.Emitter->emitInt16(StackArity);
 
     // Emit the number of live roots in the function.
     OS.AddComment("live root count");
-    AP.emitInt16(MD.live_size(PI));
+    AP.Emitter->emitInt16(MD.live_size(PI));
 
     // And for each live root...
     for (GCFunctionInfo::live_iterator LI = MD.live_begin(PI),
@@ -109,7 +109,7 @@ void ErlangGCPrinter::finishAssembly(Module &M, GCModuleInfo &Info,
          LI != LE; ++LI) {
       // Emit live root's offset within the stack frame.
       OS.AddComment("stack index (offset / wordsize)");
-      AP.emitInt16(LI->StackOffset / IntPtrSize);
+      AP.Emitter->emitInt16(LI->StackOffset / IntPtrSize);
     }
   }
 }

@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 //
 // This file contains a class that can take bytes that would normally be
-// streamed via the AsmPrinter.
+// streamed via the AsmEmitter.
 //
 //===----------------------------------------------------------------------===//
 
@@ -15,7 +15,7 @@
 #define LLVM_LIB_CODEGEN_ASMPRINTER_BYTESTREAMER_H
 
 #include "DIEHash.h"
-#include "llvm/CodeGen/AsmPrinter.h"
+#include "llvm/CodeGen/AsmEmitter.h"
 #include "llvm/MC/MCStreamer.h"
 #include "llvm/Support/LEB128.h"
 #include <string>
@@ -36,24 +36,24 @@ class ByteStreamer {
   virtual unsigned emitDIERef(const DIE &D) = 0;
 };
 
-class APByteStreamer final : public ByteStreamer {
+class AsmEmitterByteStreamer final : public ByteStreamer {
 private:
-  AsmPrinter &AP;
+  AsmEmitter &Asm;
 
 public:
-  APByteStreamer(AsmPrinter &Asm) : AP(Asm) {}
+  AsmEmitterByteStreamer(AsmEmitter &Asm) : Asm(Asm) {}
   void emitInt8(uint8_t Byte, const Twine &Comment) override {
-    AP.OutStreamer->AddComment(Comment);
-    AP.emitInt8(Byte);
+    Asm.OutStreamer->AddComment(Comment);
+    Asm.emitInt8(Byte);
   }
   void emitSLEB128(uint64_t DWord, const Twine &Comment) override {
-    AP.OutStreamer->AddComment(Comment);
-    AP.emitSLEB128(DWord);
+    Asm.OutStreamer->AddComment(Comment);
+    Asm.emitSLEB128(DWord);
   }
   void emitULEB128(uint64_t DWord, const Twine &Comment,
                    unsigned PadTo) override {
-    AP.OutStreamer->AddComment(Comment);
-    AP.emitULEB128(DWord, nullptr, PadTo);
+    Asm.OutStreamer->AddComment(Comment);
+    Asm.emitULEB128(DWord, nullptr, PadTo);
   }
   unsigned emitDIERef(const DIE &D) override {
     uint64_t Offset = D.getOffset();
@@ -83,7 +83,7 @@ class HashingByteStreamer final : public ByteStreamer {
   }
   unsigned emitDIERef(const DIE &D) override {
     Hash.hashRawTypeReference(D);
-    return 0; // Only used together with the APByteStreamer.
+    return 0; // Only used together with the AsmEmitterByteStreamer.
   }
 };
 
@@ -136,7 +136,7 @@ public:
     static constexpr unsigned ULEB128PadSize = 4;
     assert(Offset < (1ULL << (ULEB128PadSize * 7)) && "Offset wont fit");
     emitULEB128(Offset, "", ULEB128PadSize);
-    return 0; // Only used together with the APByteStreamer.
+    return 0; // Only used together with the AsmEmitterByteStreamer.
   }
 };
 

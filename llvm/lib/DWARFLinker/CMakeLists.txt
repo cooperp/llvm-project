@@ -14,7 +14,7 @@ add_llvm_component_library(LLVMDWARFLinker
   LINK_COMPONENTS
   BinaryFormat
   DebugInfoDWARF
-  AsmPrinter
+  AsmEmitter
   MC
   Support
   TargetParser

@@ -96,13 +96,13 @@ bool DwarfStreamer::init(Triple TheTriple,
   if (!MS)
     return error("no object streamer for target " + TripleName, Context), false;
 
-  // Finally create the AsmPrinter we'll use to emit the DIEs.
+  // Finally create the AsmEmitter we'll use to emit the DIEs.
   TM.reset(TheTarget->createTargetMachine(TripleName, "", "", TargetOptions(),
                                           std::nullopt));
   if (!TM)
     return error("no target machine for target " + TripleName, Context), false;
 
-  Asm.reset(TheTarget->createAsmPrinter(*TM, std::unique_ptr<MCStreamer>(MS)));
+  Asm.reset(TheTarget->createAsmEmitter(*TM, std::unique_ptr<MCStreamer>(MS)));
   if (!Asm)
     return error("no asm printer for target " + TripleName, Context), false;
   Asm->setDwarfUsesRelocationsAcrossSections(false);
@@ -221,7 +221,7 @@ void DwarfStreamer::emitSectionContents(StringRef SecData, StringRef SecName) {
 /// Emit DIE containing warnings.
 void DwarfStreamer::emitPaperTrailWarningsDie(DIE &Die) {
   switchToDebugInfoSection(/* Version */ 2);
-  auto &Asm = getAsmPrinter();
+  auto &Asm = getAsmEmitter();
   Asm.emitInt32(11 + Die.getSize() - 4);
   Asm.emitInt16(2);
   Asm.emitInt32(0);

@@ -2724,7 +2724,7 @@ void DwarfDebug::emitDebugLocEntryLocation(const DebugLocStream::Entry &Entry,
     return;
   }
   // Emit the entry.
-  APByteStreamer Streamer(*Asm);
+  AsmEmitterByteStreamer Streamer(*Asm->Emitter.get());
   emitDebugLocEntry(Streamer, Entry, CU);
 }
 

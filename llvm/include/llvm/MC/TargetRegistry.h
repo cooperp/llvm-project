@@ -35,6 +35,7 @@
 
 namespace llvm {
 
+class AsmEmitter;
 class AsmPrinter;
 class MCAsmBackend;
 class MCAsmInfo;
@@ -172,6 +173,8 @@ public:
   // depends on MC?) this should take the Streamer by value rather than rvalue
   // reference.
   using AsmPrinterCtorTy = AsmPrinter *(*)(
+      TargetMachine &TM, std::unique_ptr<MCStreamer> &&Streamer);
+  using AsmEmitterCtorTy = AsmEmitter *(*)(
       TargetMachine &TM, std::unique_ptr<MCStreamer> &&Streamer);
   using MCAsmBackendCtorTy = MCAsmBackend *(*)(const Target &T,
                                                const MCSubtargetInfo &STI,
@@ -312,6 +315,10 @@ private:
   /// AsmPrinterCtorFn - Construction function for this target's AsmPrinter,
   /// if registered.
   AsmPrinterCtorTy AsmPrinterCtorFn;
+
+  /// AsmEmitterCtorFn - Construction function for this target's AsmEmitter,
+  /// if registered.
+  AsmEmitterCtorTy AsmEmitterCtorFn;
 
   /// MCDisassemblerCtorFn - Construction function for this target's
   /// MCDisassembler, if registered.
@@ -518,6 +525,15 @@ public:
     if (!AsmPrinterCtorFn)
       return nullptr;
     return AsmPrinterCtorFn(TM, std::move(Streamer));
+  }
+
+  /// createAsmPEmitter - Create a target specific assembly emitter.  This
+  /// takes ownership of the MCStreamer object.
+  AsmEmitter *createAsmEmitter(TargetMachine &TM,
+                               std::unique_ptr<MCStreamer> &&Streamer) const {
+    if (!AsmEmitterCtorFn)
+      return nullptr;
+    return AsmEmitterCtorFn(TM, std::move(Streamer));
   }
 
   MCDisassembler *createMCDisassembler(const MCSubtargetInfo &STI,

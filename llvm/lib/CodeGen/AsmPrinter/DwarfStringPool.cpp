@@ -9,6 +9,7 @@
 #include "DwarfStringPool.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Twine.h"
+#include "llvm/CodeGen/AsmEmitter.h"
 #include "llvm/CodeGen/AsmPrinter.h"
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCStreamer.h"
@@ -20,7 +21,7 @@ using namespace llvm;
 DwarfStringPool::DwarfStringPool(BumpPtrAllocator &A, AsmPrinter &Asm,
                                  StringRef Prefix)
     : Pool(A), Prefix(Prefix),
-      ShouldCreateSymbols(Asm.doesDwarfUseRelocationsAcrossSections()) {}
+      ShouldCreateSymbols(Asm.Emitter->doesDwarfUseRelocationsAcrossSections()) {}
 
 StringMapEntry<DwarfStringPool::EntryTy> &
 DwarfStringPool::getEntryImpl(AsmPrinter &Asm, StringRef Str) {
@@ -63,8 +64,8 @@ void DwarfStringPool::emitStringOffsetsTableHeader(AsmPrinter &Asm,
   // 2 bytes of padding.
   Asm.emitDwarfUnitLength(getNumIndexedStrings() * EntrySize + 4,
                           "Length of String Offsets Set");
-  Asm.emitInt16(Asm.getDwarfVersion());
-  Asm.emitInt16(0);
+  Asm.Emitter->emitInt16(Asm.getDwarfVersion());
+  Asm.Emitter->emitInt16(0);
   // Define the symbol that marks the start of the contribution. It is
   // referenced by most unit headers via DW_AT_str_offsets_base.
   // Split units do not use the attribute.

@@ -12,6 +12,7 @@
 
 #include "llvm/ADT/Twine.h"
 #include "llvm/BinaryFormat/Dwarf.h"
+#include "llvm/CodeGen/AsmEmitter.h"
 #include "llvm/CodeGen/AsmPrinter.h"
 #include "llvm/CodeGen/DIE.h"
 #include "llvm/CodeGen/MachineFunction.h"
@@ -141,19 +142,19 @@ void AsmPrinter::emitDwarfSymbolReference(const MCSymbol *Label,
     }
 
     // If the format uses relocations with dwarf, refer to the symbol directly.
-    if (doesDwarfUseRelocationsAcrossSections()) {
+    if (Emitter->doesDwarfUseRelocationsAcrossSections()) {
       OutStreamer->emitSymbolValue(Label, getDwarfOffsetByteSize());
       return;
     }
   }
 
   // Otherwise, emit it as a label difference from the start of the section.
-  emitLabelDifference(Label, Label->getSection().getBeginSymbol(),
+  Emitter->emitLabelDifference(Label, Label->getSection().getBeginSymbol(),
                       getDwarfOffsetByteSize());
 }
 
 void AsmPrinter::emitDwarfStringOffset(DwarfStringPoolEntry S) const {
-  if (doesDwarfUseRelocationsAcrossSections()) {
+  if (Emitter->doesDwarfUseRelocationsAcrossSections()) {
     assert(S.Symbol && "No symbol available");
     emitDwarfSymbolReference(S.Symbol);
     return;
@@ -164,7 +165,7 @@ void AsmPrinter::emitDwarfStringOffset(DwarfStringPoolEntry S) const {
 }
 
 void AsmPrinter::emitDwarfOffset(const MCSymbol *Label, uint64_t Offset) const {
-  emitLabelPlusOffset(Label, Offset, getDwarfOffsetByteSize());
+  Emitter->emitLabelPlusOffset(Label, Offset, getDwarfOffsetByteSize());
 }
 
 void AsmPrinter::emitDwarfLengthOrOffset(uint64_t Value) const {
@@ -186,119 +187,15 @@ void AsmPrinter::emitCallSiteOffset(const MCSymbol *Hi, const MCSymbol *Lo,
                                     unsigned Encoding) const {
   // The least significant 3 bits specify the width of the encoding
   if ((Encoding & 0x7) == dwarf::DW_EH_PE_uleb128)
-    emitLabelDifferenceAsULEB128(Hi, Lo);
+    Emitter->emitLabelDifferenceAsULEB128(Hi, Lo);
   else
-    emitLabelDifference(Hi, Lo, GetSizeOfEncodedValue(Encoding));
+    Emitter->emitLabelDifference(Hi, Lo, GetSizeOfEncodedValue(Encoding));
 }
 
 void AsmPrinter::emitCallSiteValue(uint64_t Value, unsigned Encoding) const {
   // The least significant 3 bits specify the width of the encoding
   if ((Encoding & 0x7) == dwarf::DW_EH_PE_uleb128)
-    emitULEB128(Value);
+    Emitter->emitULEB128(Value);
   else
     OutStreamer->emitIntValue(Value, GetSizeOfEncodedValue(Encoding));
-}
-
-//===----------------------------------------------------------------------===//
-// Dwarf Lowering Routines
-//===----------------------------------------------------------------------===//
-
-void AsmPrinter::emitCFIInstruction(const MCCFIInstruction &Inst) const {
-  switch (Inst.getOperation()) {
-  default:
-    llvm_unreachable("Unexpected instruction");
-  case MCCFIInstruction::OpDefCfaOffset:
-    OutStreamer->emitCFIDefCfaOffset(Inst.getOffset());
-    break;
-  case MCCFIInstruction::OpAdjustCfaOffset:
-    OutStreamer->emitCFIAdjustCfaOffset(Inst.getOffset());
-    break;
-  case MCCFIInstruction::OpDefCfa:
-    OutStreamer->emitCFIDefCfa(Inst.getRegister(), Inst.getOffset());
-    break;
-  case MCCFIInstruction::OpDefCfaRegister:
-    OutStreamer->emitCFIDefCfaRegister(Inst.getRegister());
-    break;
-  case MCCFIInstruction::OpLLVMDefAspaceCfa:
-    OutStreamer->emitCFILLVMDefAspaceCfa(Inst.getRegister(), Inst.getOffset(),
-                                         Inst.getAddressSpace());
-    break;
-  case MCCFIInstruction::OpOffset:
-    OutStreamer->emitCFIOffset(Inst.getRegister(), Inst.getOffset());
-    break;
-  case MCCFIInstruction::OpRegister:
-    OutStreamer->emitCFIRegister(Inst.getRegister(), Inst.getRegister2());
-    break;
-  case MCCFIInstruction::OpWindowSave:
-    OutStreamer->emitCFIWindowSave();
-    break;
-  case MCCFIInstruction::OpNegateRAState:
-    OutStreamer->emitCFINegateRAState();
-    break;
-  case MCCFIInstruction::OpSameValue:
-    OutStreamer->emitCFISameValue(Inst.getRegister());
-    break;
-  case MCCFIInstruction::OpGnuArgsSize:
-    OutStreamer->emitCFIGnuArgsSize(Inst.getOffset());
-    break;
-  case MCCFIInstruction::OpEscape:
-    OutStreamer->AddComment(Inst.getComment());
-    OutStreamer->emitCFIEscape(Inst.getValues());
-    break;
-  case MCCFIInstruction::OpRestore:
-    OutStreamer->emitCFIRestore(Inst.getRegister());
-    break;
-  case MCCFIInstruction::OpUndefined:
-    OutStreamer->emitCFIUndefined(Inst.getRegister());
-    break;
-  case MCCFIInstruction::OpRememberState:
-    OutStreamer->emitCFIRememberState();
-    break;
-  case MCCFIInstruction::OpRestoreState:
-    OutStreamer->emitCFIRestoreState();
-    break;
-  }
-}
-
-void AsmPrinter::emitDwarfDIE(const DIE &Die) const {
-  // Emit the code (index) for the abbreviation.
-  if (isVerbose())
-    OutStreamer->AddComment("Abbrev [" + Twine(Die.getAbbrevNumber()) + "] 0x" +
-                            Twine::utohexstr(Die.getOffset()) + ":0x" +
-                            Twine::utohexstr(Die.getSize()) + " " +
-                            dwarf::TagString(Die.getTag()));
-  emitULEB128(Die.getAbbrevNumber());
-
-  // Emit the DIE attribute values.
-  for (const auto &V : Die.values()) {
-    dwarf::Attribute Attr = V.getAttribute();
-    assert(V.getForm() && "Too many attributes for DIE (check abbreviation)");
-
-    if (isVerbose()) {
-      OutStreamer->AddComment(dwarf::AttributeString(Attr));
-      if (Attr == dwarf::DW_AT_accessibility)
-        OutStreamer->AddComment(
-            dwarf::AccessibilityString(V.getDIEInteger().getValue()));
-    }
-
-    // Emit an attribute using the defined form.
-    V.emitValue(this);
-  }
-
-  // Emit the DIE children if any.
-  if (Die.hasChildren()) {
-    for (const auto &Child : Die.children())
-      emitDwarfDIE(Child);
-
-    OutStreamer->AddComment("End Of Children Mark");
-    emitInt8(0);
-  }
-}
-
-void AsmPrinter::emitDwarfAbbrev(const DIEAbbrev &Abbrev) const {
-  // Emit the abbreviations code (base 1 index.)
-  emitULEB128(Abbrev.getNumber(), "Abbreviation Code");
-
-  // Emit the abbreviations data.
-  Abbrev.Emit(this);
 }

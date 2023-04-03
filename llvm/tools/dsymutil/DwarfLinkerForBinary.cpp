@@ -771,7 +771,7 @@ bool DwarfLinkerForBinary::link(const DebugMap &Map) {
       Options.FileType == OutputFileType::Object)
     return MachOUtils::generateDsymCompanion(
         Options.VFS, Map, Options.Translator,
-        *Streamer->getAsmPrinter().OutStreamer, OutFile, RelocationsToApply);
+        *Streamer->getAsmEmitter().OutStreamer, OutFile, RelocationsToApply);
 
   Streamer->finish();
   return true;

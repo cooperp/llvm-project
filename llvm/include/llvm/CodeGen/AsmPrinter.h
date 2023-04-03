@@ -20,6 +20,7 @@
 #include "llvm/ADT/MapVector.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/BinaryFormat/Dwarf.h"
+#include "llvm/CodeGen/AsmEmitter.h"
 #include "llvm/CodeGen/AsmPrinterHandler.h"
 #include "llvm/CodeGen/DwarfStringPoolEntry.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
@@ -89,6 +90,8 @@ public:
   /// Target Asm Printer information.
   const MCAsmInfo *MAI;
 
+  std::unique_ptr<AsmEmitter> Emitter;
+
   /// This is the context for the output file that we are streaming. This owns
   /// all of the global MC-related objects for the generated translation unit.
   MCContext &OutContext;
@@ -96,7 +99,7 @@ public:
   /// This is the MCStreamer object for the file we are generating. This
   /// contains the transient state for the current translation unit that we are
   /// generating (such as the current section etc).
-  std::unique_ptr<MCStreamer> OutStreamer;
+  MCStreamer* OutStreamer = nullptr;
 
   /// The current machine function.
   MachineFunction *MF = nullptr;
@@ -330,14 +333,6 @@ public:
   /// local symbol if a reference to GV is guaranteed to be resolved to the
   /// definition in the same module.
   MCSymbol *getSymbolPreferLocal(const GlobalValue &GV) const;
-
-  bool doesDwarfUseRelocationsAcrossSections() const {
-    return DwarfUsesRelocationsAcrossSections;
-  }
-
-  void setDwarfUsesRelocationsAcrossSections(bool Enable) {
-    DwarfUsesRelocationsAcrossSections = Enable;
-  }
 
   //===------------------------------------------------------------------===//
   // XRay instrumentation implementation.
@@ -636,39 +631,49 @@ public:
   void printOffset(int64_t Offset, raw_ostream &OS) const;
 
   /// Emit a byte directive and value.
-  void emitInt8(int Value) const;
+  void emitInt8(int Value) const { Emitter->emitInt8(Value); }
 
   /// Emit a short directive and value.
-  void emitInt16(int Value) const;
+  void emitInt16(int Value) const { Emitter->emitInt16(Value); }
 
   /// Emit a long directive and value.
-  void emitInt32(int Value) const;
+  void emitInt32(int Value) const { Emitter->emitInt32(Value); }
 
   /// Emit a long long directive and value.
-  void emitInt64(uint64_t Value) const;
+  void emitInt64(uint64_t Value) const { Emitter->emitInt64(Value); }
 
   /// Emit the specified signed leb128 value.
-  void emitSLEB128(int64_t Value, const char *Desc = nullptr) const;
+  void emitSLEB128(int64_t Value, const char *Desc = nullptr) const { 
+    Emitter->emitSLEB128(Value, Desc);
+  }
 
   /// Emit the specified unsigned leb128 value.
   void emitULEB128(uint64_t Value, const char *Desc = nullptr,
-                   unsigned PadTo = 0) const;
+                   unsigned PadTo = 0) const {
+    Emitter->emitULEB128(Value, Desc, PadTo);
+  }
 
   /// Emit something like ".long Hi-Lo" where the size in bytes of the directive
   /// is specified by Size and Hi/Lo specify the labels.  This implicitly uses
   /// .set if it is available.
   void emitLabelDifference(const MCSymbol *Hi, const MCSymbol *Lo,
-                           unsigned Size) const;
+                           unsigned Size) const {
+    Emitter->emitLabelDifference(Hi, Lo, Size);
+  }
 
   /// Emit something like ".uleb128 Hi-Lo".
   void emitLabelDifferenceAsULEB128(const MCSymbol *Hi,
-                                    const MCSymbol *Lo) const;
+                                    const MCSymbol *Lo) const {
+    Emitter->emitLabelDifferenceAsULEB128(Hi, Lo);
+  }
 
   /// Emit something like ".long Label+Offset" where the size in bytes of the
   /// directive is specified by Size and Label specifies the label.  This
   /// implicitly uses .set if it is available.
   void emitLabelPlusOffset(const MCSymbol *Label, uint64_t Offset,
-                           unsigned Size, bool IsSectionRelative = false) const;
+                           unsigned Size, bool IsSectionRelative = false) const {
+    Emitter->emitLabelPlusOffset(Label, Offset, Size, IsSectionRelative);
+  }
 
   /// Emit something like ".long Label" where the size in bytes of the directive
   /// is specified by Size and Label specifies the label.
@@ -748,9 +753,6 @@ public:
   // Dwarf Lowering Routines
   //===------------------------------------------------------------------===//
 
-  /// Emit frame instruction to describe the layout of the frame.
-  void emitCFIInstruction(const MCCFIInstruction &Inst) const;
-
   /// Emit Dwarf abbreviation table.
   template <typename T> void emitDwarfAbbrevs(const T &Abbrevs) const {
     // For each abbreviation.
@@ -758,7 +760,7 @@ public:
       emitDwarfAbbrev(*Abbrev);
 
     // Mark end of abbreviations.
-    emitULEB128(0, "EOM(3)");
+    Emitter->emitULEB128(0, "EOM(3)");
   }
 
   void emitDwarfAbbrev(const DIEAbbrev &Abbrev) const;
@@ -831,8 +833,6 @@ private:
   mutable const MachineInstr *LastMI = nullptr;
   mutable unsigned LastFn = 0;
   mutable unsigned Counter = ~0U;
-
-  bool DwarfUsesRelocationsAcrossSections = false;
 
   /// This method emits the header for the current function.
   virtual void emitFunctionHeader();

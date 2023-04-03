@@ -35,6 +35,7 @@
 #include "llvm/BinaryFormat/COFF.h"
 #include "llvm/BinaryFormat/Dwarf.h"
 #include "llvm/BinaryFormat/ELF.h"
+#include "llvm/CodeGen/AsmEmitter.h"
 #include "llvm/CodeGen/GCMetadata.h"
 #include "llvm/CodeGen/GCMetadataPrinter.h"
 #include "llvm/CodeGen/LazyMachineBlockFrequencyInfo.h"
@@ -355,11 +356,11 @@ Align AsmPrinter::getGVAlignment(const GlobalObject *GV, const DataLayout &DL,
 
 AsmPrinter::AsmPrinter(TargetMachine &tm, std::unique_ptr<MCStreamer> Streamer)
     : MachineFunctionPass(ID), TM(tm), MAI(tm.getMCAsmInfo()),
-      OutContext(Streamer->getContext()), OutStreamer(std::move(Streamer)),
+      Emitter(std::make_unique<AsmEmitter>(TM, std::move(Streamer))),
+      OutContext(Emitter->OutStreamer->getContext()),
+      OutStreamer(Emitter->OutStreamer.get()),
       SM(*this) {
   VerboseAsm = OutStreamer->isVerboseAsm();
-  DwarfUsesRelocationsAcrossSections =
-      MAI->doesDwarfUseRelocationsAcrossSections();
 }
 
 AsmPrinter::~AsmPrinter() {
@@ -1316,7 +1317,7 @@ void AsmPrinter::emitCFIInstruction(const MachineInstr &MI) {
   const std::vector<MCCFIInstruction> &Instrs = MF->getFrameInstructions();
   unsigned CFIIndex = MI.getOperand(0).getCFIIndex();
   const MCCFIInstruction &CFI = Instrs[CFIIndex];
-  emitCFIInstruction(CFI);
+  Emitter->emitCFIInstruction(CFI);
 }
 
 void AsmPrinter::emitFrameAlloc(const MachineInstr &MI) {
@@ -1377,10 +1378,10 @@ void AsmPrinter::emitBBAddrMapSection(const MachineFunction &MF) {
     }
     // Emit the basic block offset relative to the end of the previous block.
     // This is zero unless the block is padded due to alignment.
-    emitLabelDifferenceAsULEB128(MBBSymbol, PrevMBBEndSymbol);
+    Emitter->emitLabelDifferenceAsULEB128(MBBSymbol, PrevMBBEndSymbol);
     // Emit the basic block size. When BBs have alignments, their size cannot
     // always be computed from their offsets.
-    emitLabelDifferenceAsULEB128(MBB.getEndSymbol(), MBBSymbol);
+    Emitter->emitLabelDifferenceAsULEB128(MBB.getEndSymbol(), MBBSymbol);
     // Emit the Metadata.
     OutStreamer->emitULEB128IntValue(getBBAddrMapMetadata(MBB));
     PrevMBBEndSymbol = MBB.getEndSymbol();
@@ -1540,13 +1541,13 @@ void AsmPrinter::emitPCSections(const MachineFunction &MF) {
             // Emit relative relocation `addr - base`, which avoids a dynamic
             // relocation in the final binary. User will get the address with
             // `base + addr`.
-            emitLabelDifference(Sym, Base, RelativeRelocSize);
+            Emitter->emitLabelDifference(Sym, Base, RelativeRelocSize);
           } else {
             // Emit delta between symbol and previous symbol.
             if (ConstULEB128)
-              emitLabelDifferenceAsULEB128(Sym, Prev);
+              Emitter->emitLabelDifferenceAsULEB128(Sym, Prev);
             else
-              emitLabelDifference(Sym, Prev, 4);
+              Emitter->emitLabelDifference(Sym, Prev, 4);
           }
           Prev = Sym;
         }
@@ -1562,7 +1563,7 @@ void AsmPrinter::emitPCSections(const MachineFunction &MF) {
 
           if (auto *CI = dyn_cast<ConstantInt>(C);
               CI && ConstULEB128 && Size > 1 && Size <= 8) {
-            emitULEB128(CI->getZExtValue());
+            Emitter->emitULEB128(CI->getZExtValue());
           } else {
             emitGlobalConstant(DL, C);
           }
@@ -2847,77 +2848,6 @@ void AsmPrinter::emitModuleCommandLines(Module &M) {
   OutStreamer->popSection();
 }
 
-//===--------------------------------------------------------------------===//
-// Emission and print routines
-//
-
-/// Emit a byte directive and value.
-///
-void AsmPrinter::emitInt8(int Value) const { OutStreamer->emitInt8(Value); }
-
-/// Emit a short directive and value.
-void AsmPrinter::emitInt16(int Value) const { OutStreamer->emitInt16(Value); }
-
-/// Emit a long directive and value.
-void AsmPrinter::emitInt32(int Value) const { OutStreamer->emitInt32(Value); }
-
-/// EmitSLEB128 - emit the specified signed leb128 value.
-void AsmPrinter::emitSLEB128(int64_t Value, const char *Desc) const {
-  if (isVerbose() && Desc)
-    OutStreamer->AddComment(Desc);
-
-  OutStreamer->emitSLEB128IntValue(Value);
-}
-
-void AsmPrinter::emitULEB128(uint64_t Value, const char *Desc,
-                             unsigned PadTo) const {
-  if (isVerbose() && Desc)
-    OutStreamer->AddComment(Desc);
-
-  OutStreamer->emitULEB128IntValue(Value, PadTo);
-}
-
-/// Emit a long long directive and value.
-void AsmPrinter::emitInt64(uint64_t Value) const {
-  OutStreamer->emitInt64(Value);
-}
-
-/// Emit something like ".long Hi-Lo" where the size in bytes of the directive
-/// is specified by Size and Hi/Lo specify the labels. This implicitly uses
-/// .set if it avoids relocations.
-void AsmPrinter::emitLabelDifference(const MCSymbol *Hi, const MCSymbol *Lo,
-                                     unsigned Size) const {
-  OutStreamer->emitAbsoluteSymbolDiff(Hi, Lo, Size);
-}
-
-/// Emit something like ".uleb128 Hi-Lo".
-void AsmPrinter::emitLabelDifferenceAsULEB128(const MCSymbol *Hi,
-                                              const MCSymbol *Lo) const {
-  OutStreamer->emitAbsoluteSymbolDiffAsULEB128(Hi, Lo);
-}
-
-/// EmitLabelPlusOffset - Emit something like ".long Label+Offset"
-/// where the size in bytes of the directive is specified by Size and Label
-/// specifies the label.  This implicitly uses .set if it is available.
-void AsmPrinter::emitLabelPlusOffset(const MCSymbol *Label, uint64_t Offset,
-                                     unsigned Size,
-                                     bool IsSectionRelative) const {
-  if (MAI->needsDwarfSectionOffsetDirective() && IsSectionRelative) {
-    OutStreamer->emitCOFFSecRel32(Label, Offset);
-    if (Size > 4)
-      OutStreamer->emitZeros(Size - 4);
-    return;
-  }
-
-  // Emit Label+Offset (or just Label if Offset is zero)
-  const MCExpr *Expr = MCSymbolRefExpr::create(Label, OutContext);
-  if (Offset)
-    Expr = MCBinaryExpr::createAdd(
-        Expr, MCConstantExpr::create(Offset, OutContext), OutContext);
-
-  OutStreamer->emitValue(Expr, Size);
-}
-
 //===----------------------------------------------------------------------===//
 
 // EmitAlignment - Emit an alignment directive to the specified power of
@@ -4053,7 +3983,7 @@ void AsmPrinter::emitXRayTable() {
                                     Ctx),
             Ctx),
         WordSizeBytes);
-    Sled.emit(WordSizeBytes, OutStreamer.get());
+    Sled.emit(WordSizeBytes, OutStreamer);
   }
   MCSymbol *SledsEnd = OutContext.createTempSymbol("xray_sleds_end", true);
   OutStreamer->emitLabel(SledsEnd);
@@ -4141,7 +4071,7 @@ unsigned int AsmPrinter::getDwarfOffsetByteSize() const {
 dwarf::FormParams AsmPrinter::getDwarfFormParams() const {
   return {getDwarfVersion(), uint8_t(getPointerSize()),
           OutStreamer->getContext().getDwarfFormat(),
-          doesDwarfUseRelocationsAcrossSections()};
+          Emitter->doesDwarfUseRelocationsAcrossSections()};
 }
 
 unsigned int AsmPrinter::getUnitLengthFieldByteSize() const {

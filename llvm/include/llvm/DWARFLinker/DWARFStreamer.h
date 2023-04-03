@@ -10,7 +10,7 @@
 #define LLVM_DWARFLINKER_DWARFSTREAMER_H
 
 #include "llvm/BinaryFormat/Swift.h"
-#include "llvm/CodeGen/AsmPrinter.h"
+#include "llvm/CodeGen/AsmEmitter.h"
 #include "llvm/DWARFLinker/DWARFLinker.h"
 #include "llvm/MC/MCAsmInfo.h"
 #include "llvm/MC/MCContext.h"
@@ -29,12 +29,12 @@ enum class OutputFileType {
 };
 
 ///   User of DwarfStreamer should call initialization code
-///   for AsmPrinter:
+///   for AsmEmitter:
 ///
 ///   InitializeAllTargetInfos();
 ///   InitializeAllTargetMCs();
 ///   InitializeAllTargets();
-///   InitializeAllAsmPrinters();
+///   InitializeAllAsmEmitters();
 
 class MCCodeEmitter;
 class DWARFDebugMacro;
@@ -56,7 +56,7 @@ public:
   /// Dump the file to the disk.
   void finish();
 
-  AsmPrinter &getAsmPrinter() const { return *Asm; }
+  AsmEmitter &getAsmEmitter() const { return *Asm; }
 
   /// Set the current output section to debug_info and change
   /// the MC Dwarf version to \p DwarfVersion.
@@ -240,11 +240,11 @@ private:
   MCAsmBackend *MAB; // Owned by MCStreamer
   std::unique_ptr<MCInstrInfo> MII;
   std::unique_ptr<MCSubtargetInfo> MSTI;
-  MCInstPrinter *MIP; // Owned by AsmPrinter
+  MCInstPrinter *MIP; // Owned by AsmEmitter
   MCCodeEmitter *MCE; // Owned by MCStreamer
-  MCStreamer *MS;     // Owned by AsmPrinter
+  MCStreamer *MS;     // Owned by AsmEmitter
   std::unique_ptr<TargetMachine> TM;
-  std::unique_ptr<AsmPrinter> Asm;
+  std::unique_ptr<AsmEmitter> Asm;
   /// @}
 
   /// The output file we stream the linked Dwarf to.

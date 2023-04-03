@@ -29,11 +29,11 @@ MCSymbol *AddressPool::emitHeader(AsmPrinter &Asm, MCSection *Section) {
   MCSymbol *EndLabel =
       Asm.emitDwarfUnitLength("debug_addr", "Length of contribution");
   Asm.OutStreamer->AddComment("DWARF version number");
-  Asm.emitInt16(Asm.getDwarfVersion());
+  Asm.Emitter->emitInt16(Asm.getDwarfVersion());
   Asm.OutStreamer->AddComment("Address size");
-  Asm.emitInt8(AddrSize);
+  Asm.Emitter->emitInt8(AddrSize);
   Asm.OutStreamer->AddComment("Segment selector size");
-  Asm.emitInt8(0); // TODO: Support non-zero segment_selector_size.
+  Asm.Emitter->emitInt8(0); // TODO: Support non-zero segment_selector_size.
 
   return EndLabel;
 }
