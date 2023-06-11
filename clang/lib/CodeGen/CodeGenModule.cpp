@@ -1603,10 +1603,10 @@ StringRef CodeGenModule::getMangledName(GlobalDecl GD) {
   // static device variable depends on whether the variable is referenced by
   // a host or device host function. Therefore the mangled name cannot be
   // cached.
+  auto [MangledDeclNamesIt, Inserted] = MangledDeclNames.insert({CanonicalGD, ""});
   if (!LangOpts.CUDAIsDevice || !getContext().mayExternalize(GD.getDecl())) {
-    auto FoundName = MangledDeclNames.find(CanonicalGD);
-    if (FoundName != MangledDeclNames.end())
-      return FoundName->second;
+    if (!Inserted)
+      return MangledDeclNamesIt->second;
   }
 
   // Keep the first result in the case of a mangling collision.
@@ -1634,7 +1634,7 @@ StringRef CodeGenModule::getMangledName(GlobalDecl GD) {
                  ND));
 
   auto Result = Manglings.insert(std::make_pair(MangledName, GD));
-  return MangledDeclNames[CanonicalGD] = Result.first->first();
+  return MangledDeclNamesIt->second = Result.first->first();
 }
 
 StringRef CodeGenModule::getBlockMangledName(GlobalDecl GD,
