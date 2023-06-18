@@ -993,6 +993,10 @@ macro(add_llvm_executable name)
     llvm_update_compile_flags(${name})
   endif()
 
+  if (NOT LLVM_ENABLE_PLUGINS)
+    set(ARG_SUPPORT_PLUGINS Off)
+  endif()
+
   if (ARG_SUPPORT_PLUGINS AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "AIX")
     set(LLVM_NO_DEAD_STRIP On)
   endif()
@@ -1007,6 +1011,9 @@ macro(add_llvm_executable name)
 
   if (LLVM_EXPORTED_SYMBOL_FILE)
     add_llvm_symbol_exports( ${name} ${LLVM_EXPORTED_SYMBOL_FILE} )
+  elseif (NOT LLVM_NO_DEAD_STRIP AND APPLE)
+    set_property(TARGET ${name} APPEND_STRING PROPERTY
+                 LINK_FLAGS " -Wl,-no_exported_symbols")
   endif(LLVM_EXPORTED_SYMBOL_FILE)
 
   if (LLVM_LINK_LLVM_DYLIB AND NOT ARG_DISABLE_LLVM_LINK_LLVM_DYLIB)
