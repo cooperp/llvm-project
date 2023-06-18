@@ -770,6 +770,13 @@ if (LLVM_LINK_LLVM_DYLIB AND BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Cannot enable BUILD_SHARED_LIBS with LLVM_LINK_LLVM_DYLIB.  We recommend disabling BUILD_SHARED_LIBS.")
 endif()
 
+if (APPLE)
+  option(LLVM_MERGE_DYLIBS "Merge tools with the libllvm dynamic library" OFF)
+  if (LLVM_MERGE_DYLIBS AND NOT LLVM_LINK_LLVM_DYLIB)
+    message(FATAL_ERROR "Cannot enable LLVM_MERGE_DYLIBS without LLVM_LINK_LLVM_DYLIB.")
+  endif()
+endif()
+
 option(LLVM_OPTIMIZED_TABLEGEN "Force TableGen to be built with optimization" OFF)
 if(CMAKE_CROSSCOMPILING OR (LLVM_OPTIMIZED_TABLEGEN AND (LLVM_ENABLE_ASSERTIONS OR CMAKE_CONFIGURATION_TYPES)))
   set(LLVM_USE_HOST_TOOLS ON)

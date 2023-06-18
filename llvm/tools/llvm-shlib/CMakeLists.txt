@@ -77,6 +77,11 @@ if(LLVM_BUILD_LLVM_DYLIB)
   if(TARGET libLLVMExports)
     add_dependencies(LLVM libLLVMExports)
   endif()
+
+  if (LLVM_MERGE_DYLIBS)
+    target_link_options(LLVM PRIVATE LINKER:-make_mergeable)
+    target_link_options(LLVM PRIVATE LINKER:-all_load)
+  endif()
 endif()
 
 if(LLVM_BUILD_LLVM_C_DYLIB AND NOT MSVC)

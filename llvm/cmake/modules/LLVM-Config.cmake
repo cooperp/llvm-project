@@ -92,7 +92,12 @@ macro(llvm_config executable)
       endif()
     endif()
 
-    target_link_libraries(${executable} PRIVATE LLVM)
+    if (LLVM_MERGE_DYLIBS)
+      target_link_libraries(${executable} PRIVATE "-Xlinker -merge_library -Xlinker" LLVM)
+    else()
+      target_link_libraries(${executable} PRIVATE LLVM)
+    endif()
+
   endif()
 
   explicit_llvm_config(${executable} ${link_components})

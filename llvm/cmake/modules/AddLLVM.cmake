@@ -688,7 +688,11 @@ function(llvm_add_library name)
     set(llvm_libs ${ARG_PLUGIN_TOOL})
   elseif (NOT ARG_COMPONENT_LIB)
     if (LLVM_LINK_LLVM_DYLIB AND NOT ARG_DISABLE_LLVM_LINK_LLVM_DYLIB)
-      set(llvm_libs LLVM)
+      if (LLVM_MERGE_DYLIBS)
+        set(llvm_libs "-Xlinker -merge_library -Xlinker" LLVM)
+      else()
+        set(llvm_libs LLVM)
+      endif()
     else()
       llvm_map_components_to_libnames(llvm_libs
        ${ARG_LINK_COMPONENTS}
