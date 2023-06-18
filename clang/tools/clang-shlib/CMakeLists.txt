@@ -61,3 +61,8 @@ if (MINGW OR CYGWIN)
   # make sure we export all symbols despite potential dllexports.
   target_link_options(clang-cpp PRIVATE LINKER:--export-all-symbols)
 endif()
+
+if (LLVM_MERGE_DYLIBS)
+    target_link_options(clang-cpp PRIVATE LINKER:-make_mergeable)
+    target_link_options(clang-cpp PRIVATE LINKER:-all_load)
+  endif()
