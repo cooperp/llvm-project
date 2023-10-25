@@ -524,9 +524,6 @@ public:
 /// @name Module Flags Accessors
 /// @{
 
-  /// Returns the module flags in the provided vector.
-  void getModuleFlagsMetadata(SmallVectorImpl<ModuleFlagEntry> &Flags) const;
-
   /// Return the corresponding value if Key appears in module flags, otherwise
   /// return null.
   Metadata *getModuleFlag(StringRef Key) const;
@@ -869,6 +866,53 @@ public:
     return make_range(
         debug_compile_units_iterator(CUs, 0),
         debug_compile_units_iterator(CUs, CUs ? CUs->getNumOperands() : 0));
+  }
+
+  /// An iterator for ModuleFlagEntry that skips invalid entries.
+  class module_flags_entry_iterator {
+    const NamedMDNode *ModFlags;
+    unsigned Idx;
+    std::optional<ModuleFlagEntry> CurrentEntry;
+
+    void SkipInvalidEntrues();
+
+  public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = ModuleFlagEntry *;
+    using difference_type = std::ptrdiff_t;
+    using pointer = value_type *;
+    using reference = value_type &;
+
+    explicit module_flags_entry_iterator(const NamedMDNode *ModFlags,
+                                         unsigned Idx)
+        : ModFlags(ModFlags), Idx(Idx) {
+      SkipInvalidEntrues();
+    }
+
+    module_flags_entry_iterator &operator++() {
+      ++Idx;
+      SkipInvalidEntrues();
+      return *this;
+    }
+
+    bool operator==(const module_flags_entry_iterator &I) const {
+      return Idx == I.Idx;
+    }
+
+    bool operator!=(const module_flags_entry_iterator &I) const {
+      return Idx != I.Idx;
+    }
+
+    const ModuleFlagEntry &operator*() const { return CurrentEntry.value(); }
+  };
+
+  /// Return an iterator for all ModuleFlagEntry's listed in this Module's
+  /// llvm.module.flags named metadata node and aren't invalid.
+  iterator_range<module_flags_entry_iterator> module_flag_entries() const {
+    const NamedMDNode *Flags = getModuleFlagsMetadata();
+    return make_range(
+      module_flags_entry_iterator(Flags, 0),
+      module_flags_entry_iterator(Flags, Flags ? Flags->getNumOperands() : 0));
   }
 /// @}
 

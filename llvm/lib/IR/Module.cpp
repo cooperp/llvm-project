@@ -308,30 +308,10 @@ bool Module::isValidModuleFlag(const MDNode &ModFlag, ModFlagBehavior &MFB,
   return true;
 }
 
-/// getModuleFlagsMetadata - Returns the module flags in the provided vector.
-void Module::
-getModuleFlagsMetadata(SmallVectorImpl<ModuleFlagEntry> &Flags) const {
-  const NamedMDNode *ModFlags = getModuleFlagsMetadata();
-  if (!ModFlags) return;
-
-  for (const MDNode *Flag : ModFlags->operands()) {
-    ModFlagBehavior MFB;
-    MDString *Key = nullptr;
-    Metadata *Val = nullptr;
-    if (isValidModuleFlag(*Flag, MFB, Key, Val)) {
-      // Check the operands of the MDNode before accessing the operands.
-      // The verifier will actually catch these failures.
-      Flags.push_back(ModuleFlagEntry(MFB, Key, Val));
-    }
-  }
-}
-
 /// Return the corresponding value if Key appears in module flags, otherwise
 /// return null.
 Metadata *Module::getModuleFlag(StringRef Key) const {
-  SmallVector<Module::ModuleFlagEntry, 8> ModuleFlags;
-  getModuleFlagsMetadata(ModuleFlags);
-  for (const ModuleFlagEntry &MFE : ModuleFlags) {
+  for (const ModuleFlagEntry &MFE : module_flag_entries()) {
     if (Key == MFE.Key->getString())
       return MFE.Val;
   }
@@ -415,6 +395,25 @@ void Module::debug_compile_units_iterator::SkipNoDebugCUs() {
   while (CUs && (Idx < CUs->getNumOperands()) &&
          ((*this)->getEmissionKind() == DICompileUnit::NoDebug))
     ++Idx;
+}
+
+void Module::module_flags_entry_iterator::SkipInvalidEntrues() {
+  if (!ModFlags)
+    return;
+
+  CurrentEntry = std::nullopt;
+  while (Idx < ModFlags->getNumOperands()) {
+    ModFlagBehavior MFB;
+    MDString *Key = nullptr;
+    Metadata *Val = nullptr;
+    if (isValidModuleFlag(*ModFlags->getOperand(Idx), MFB, Key, Val)) {
+      // Check the operands of the MDNode before accessing the operands.
+      // The verifier will actually catch these failures.
+      CurrentEntry = ModuleFlagEntry(MFB, Key, Val);
+      break;
+    }
+    ++Idx;
+  }
 }
 
 iterator_range<Module::global_object_iterator> Module::global_objects() {

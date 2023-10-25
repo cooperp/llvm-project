@@ -115,10 +115,8 @@ MCSection *RISCVELFTargetObjectFile::SelectSectionForGlobal(
 
 void RISCVELFTargetObjectFile::getModuleMetadata(Module &M) {
   TargetLoweringObjectFileELF::getModuleMetadata(M);
-  SmallVector<Module::ModuleFlagEntry, 8> ModuleFlags;
-  M.getModuleFlagsMetadata(ModuleFlags);
 
-  for (const auto &MFE : ModuleFlags) {
+  for (const auto &MFE : M.module_flag_entries()) {
     StringRef Key = MFE.Key->getString();
     if (Key == "SmallDataLimit") {
       SSThreshold = mdconst::extract<ConstantInt>(MFE.Val)->getZExtValue();

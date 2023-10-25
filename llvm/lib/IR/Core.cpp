@@ -349,8 +349,7 @@ map_from_llvmModFlagBehavior(Module::ModFlagBehavior Behavior) {
 }
 
 LLVMModuleFlagEntry *LLVMCopyModuleFlagsMetadata(LLVMModuleRef M, size_t *Len) {
-  SmallVector<Module::ModuleFlagEntry, 8> MFEs;
-  unwrap(M)->getModuleFlagsMetadata(MFEs);
+  SmallVector<Module::ModuleFlagEntry, 8> MFEs(unwrap(M)->module_flag_entries());
 
   LLVMOpaqueModuleFlagEntry *Result = static_cast<LLVMOpaqueModuleFlagEntry *>(
       safe_malloc(MFEs.size() * sizeof(LLVMOpaqueModuleFlagEntry)));

@@ -149,12 +149,10 @@ void TargetLoweringObjectFile::emitPersonalityValue(MCStreamer &Streamer,
 void TargetLoweringObjectFile::emitCGProfileMetadata(MCStreamer &Streamer,
                                                      Module &M) const {
   MCContext &C = getContext();
-  SmallVector<Module::ModuleFlagEntry, 8> ModuleFlags;
-  M.getModuleFlagsMetadata(ModuleFlags);
 
   MDNode *CFGProfile = nullptr;
 
-  for (const auto &MFE : ModuleFlags) {
+  for (const auto &MFE : M.module_flag_entries()) {
     StringRef Key = MFE.Key->getString();
     if (Key == "CG Profile") {
       CFGProfile = cast<MDNode>(MFE.Val);

@@ -77,10 +77,7 @@ static cl::opt<bool> JumpTableInFunctionSection(
 
 static void GetObjCImageInfo(Module &M, unsigned &Version, unsigned &Flags,
                              StringRef &Section) {
-  SmallVector<Module::ModuleFlagEntry, 8> ModuleFlags;
-  M.getModuleFlagsMetadata(ModuleFlags);
-
-  for (const auto &MFE: ModuleFlags) {
+  for (const auto &MFE: M.module_flag_entries()) {
     // Ignore flags with 'Require' behaviour.
     if (MFE.Behavior == Module::Require)
       continue;
