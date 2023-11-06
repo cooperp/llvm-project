@@ -1177,8 +1177,8 @@ void DXILBitcodeWriter::writeValueSymbolTableForwardDecl() {}
 /// Returns the bit offset to backpatch with the location of the real VST.
 void DXILBitcodeWriter::writeModuleInfo() {
   // Emit various pieces of data attached to a module.
-  if (!M.getTargetTriple().empty())
-    writeStringRecord(Stream, bitc::MODULE_CODE_TRIPLE, M.getTargetTriple(),
+  if (!M.getTargetTriple().str().empty())
+    writeStringRecord(Stream, bitc::MODULE_CODE_TRIPLE, M.getTargetTriple().str(),
                       0 /*TODO*/);
   const std::string &DL = M.getDataLayoutStr();
   if (!DL.empty())

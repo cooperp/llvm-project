@@ -337,9 +337,9 @@ Error Builder::build(ArrayRef<Module *> IRMods) {
   assert(!IRMods.empty());
   Hdr.Version = storage::Header::kCurrentVersion;
   setStr(Hdr.Producer, kExpectedProducerName);
-  setStr(Hdr.TargetTriple, IRMods[0]->getTargetTriple());
+  setStr(Hdr.TargetTriple, IRMods[0]->getTargetTriple().str());
   setStr(Hdr.SourceFileName, IRMods[0]->getSourceFileName());
-  TT = Triple(IRMods[0]->getTargetTriple());
+  TT = IRMods[0]->getTargetTriple();
 
   for (auto *M : IRMods)
     if (Error Err = addModule(M))

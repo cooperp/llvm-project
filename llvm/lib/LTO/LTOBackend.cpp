@@ -203,7 +203,7 @@ static void RegisterPassPlugins(ArrayRef<std::string> PassPlugins,
 
 static std::unique_ptr<TargetMachine>
 createTargetMachine(const Config &Conf, const Target *TheTarget, Module &M) {
-  StringRef TheTriple = M.getTargetTriple();
+  StringRef TheTriple = M.getTargetTriple().str();
   SubtargetFeatures Features;
   Features.getDefaultSubtargetFeatures(Triple(TheTriple));
   for (const std::string &A : Conf.MAttrs)
@@ -473,11 +473,11 @@ static Expected<const Target *> initAndLookupTarget(const Config &C,
                                                     Module &Mod) {
   if (!C.OverrideTriple.empty())
     Mod.setTargetTriple(C.OverrideTriple);
-  else if (Mod.getTargetTriple().empty())
+  else if (Mod.getTargetTriple().str().empty())
     Mod.setTargetTriple(C.DefaultTriple);
 
   std::string Msg;
-  const Target *T = TargetRegistry::lookupTarget(Mod.getTargetTriple(), Msg);
+  const Target *T = TargetRegistry::lookupTarget(Mod.getTargetTriple().str(), Msg);
   if (!T)
     return make_error<StringError>(Msg, inconvertibleErrorCode());
   return T;

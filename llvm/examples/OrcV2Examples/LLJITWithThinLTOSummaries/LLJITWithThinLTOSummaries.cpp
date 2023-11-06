@@ -202,7 +202,7 @@ int main(int Argc, char *Argv[]) {
   auto Builder = LLJITBuilder();
 
   MainModule.withModuleDo([&](Module &M) {
-    if (M.getTargetTriple().empty()) {
+    if (M.getTargetTriple().str().empty()) {
       Builder.setJITTargetMachineBuilder(
           ExitOnErr(JITTargetMachineBuilder::detectHost()));
     } else {

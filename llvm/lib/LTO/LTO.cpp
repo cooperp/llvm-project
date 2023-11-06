@@ -640,7 +640,7 @@ Error LTO::add(std::unique_ptr<InputFile> Input,
   if (Conf.ResolutionFile)
     writeToResolutionFile(*Conf.ResolutionFile, Input.get(), Res);
 
-  if (RegularLTO.CombinedModule->getTargetTriple().empty()) {
+  if (RegularLTO.CombinedModule->getTargetTriple().str().empty()) {
     RegularLTO.CombinedModule->setTargetTriple(Input->getTargetTriple());
     if (Triple(Input->getTargetTriple()).isOSBinFormatELF())
       Conf.VisibilityScheme = Config::ELF;

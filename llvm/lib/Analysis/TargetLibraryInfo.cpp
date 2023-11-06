@@ -136,13 +136,13 @@ static bool isCallingConvCCompatible(CallingConv::ID CC, StringRef TT,
 
 bool TargetLibraryInfoImpl::isCallingConvCCompatible(CallBase *CI) {
   return ::isCallingConvCCompatible(CI->getCallingConv(),
-                                    CI->getModule()->getTargetTriple(),
+                                    CI->getModule()->getTargetTriple().str(),
                                     CI->getFunctionType());
 }
 
 bool TargetLibraryInfoImpl::isCallingConvCCompatible(Function *F) {
   return ::isCallingConvCCompatible(F->getCallingConv(),
-                                    F->getParent()->getTargetTriple(),
+                                    F->getParent()->getTargetTriple().str(),
                                     F->getFunctionType());
 }
 

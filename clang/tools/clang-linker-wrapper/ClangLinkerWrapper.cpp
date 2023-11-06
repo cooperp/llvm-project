@@ -793,7 +793,7 @@ Expected<StringRef> writeOffloadFile(const OffloadFile &File) {
 Expected<StringRef> compileModule(Module &M) {
   llvm::TimeTraceScope TimeScope("Compile module");
   std::string Msg;
-  const Target *T = TargetRegistry::lookupTarget(M.getTargetTriple(), Msg);
+  const Target *T = TargetRegistry::lookupTarget(M.getTargetTriple().str(), Msg);
   if (!T)
     return createStringError(inconvertibleErrorCode(), Msg);
 
@@ -802,7 +802,7 @@ Expected<StringRef> compileModule(Module &M) {
   StringRef CPU = "";
   StringRef Features = "";
   std::unique_ptr<TargetMachine> TM(
-      T->createTargetMachine(M.getTargetTriple(), CPU, Features, Options,
+      T->createTargetMachine(M.getTargetTriple().str(), CPU, Features, Options,
                              Reloc::PIC_, M.getCodeModel()));
 
   if (M.getDataLayout().isDefault())

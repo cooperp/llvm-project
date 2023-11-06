@@ -1194,7 +1194,7 @@ void CodeGenAction::ExecuteAction() {
     return;
 
   const TargetOptions &TargetOpts = CI.getTargetOpts();
-  if (TheModule->getTargetTriple() != TargetOpts.Triple) {
+  if (TheModule->getTargetTriple().str() != TargetOpts.Triple) {
     Diagnostics.Report(SourceLocation(), diag::warn_fe_override_module)
         << TargetOpts.Triple;
     TheModule->setTargetTriple(TargetOpts.Triple);

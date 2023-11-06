@@ -54,7 +54,7 @@ std::unique_ptr<Module> llvm::CloneModule(
       std::make_unique<Module>(M.getModuleIdentifier(), M.getContext());
   New->setSourceFileName(M.getSourceFileName());
   New->setDataLayout(M.getDataLayout());
-  New->setTargetTriple(M.getTargetTriple());
+  New->setTargetTriple(M.getTargetTriple().str());
   New->setModuleInlineAsm(M.getModuleInlineAsm());
 
   // Loop over all of the global variables, making corresponding globals in the

@@ -3198,7 +3198,7 @@ createTargetMachine(Function *F, CodeGenOpt::Level OptLevel) {
 
   StringRef CPU = F->getFnAttribute("target-cpu").getValueAsString();
   StringRef Features = F->getFnAttribute("target-features").getValueAsString();
-  const std::string &Triple = M->getTargetTriple();
+  const std::string &Triple = M->getTargetTriple().str();
 
   std::string Error;
   const llvm::Target *TheTarget = TargetRegistry::lookupTarget(Triple, Error);

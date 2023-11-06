@@ -1583,8 +1583,8 @@ Error IRLinker::run() {
     DstM.setDataLayout(SrcM->getDataLayout());
 
   // Copy the target triple from the source to dest if the dest's is empty.
-  if (DstM.getTargetTriple().empty() && !SrcM->getTargetTriple().empty())
-    DstM.setTargetTriple(SrcM->getTargetTriple());
+  if (DstM.getTargetTriple().str().empty() && !SrcM->getTargetTriple().str().empty())
+    DstM.setTargetTriple(SrcM->getTargetTriple().str());
 
   Triple SrcTriple(SrcM->getTargetTriple()), DstTriple(DstM.getTargetTriple());
 
@@ -1622,12 +1622,12 @@ Error IRLinker::run() {
                 DstM.getDataLayoutStr() + "'\n");
   }
 
-  if (EnableTripleWarning && !SrcM->getTargetTriple().empty() &&
+  if (EnableTripleWarning && !SrcM->getTargetTriple().str().empty() &&
       !SrcTriple.isCompatibleWith(DstTriple))
     emitWarning("Linking two modules of different target triples: '" +
                 SrcM->getModuleIdentifier() + "' is '" +
-                SrcM->getTargetTriple() + "' whereas '" +
-                DstM.getModuleIdentifier() + "' is '" + DstM.getTargetTriple() +
+                SrcM->getTargetTriple().str() + "' whereas '" +
+                DstM.getModuleIdentifier() + "' is '" + DstM.getTargetTriple().str() +
                 "'\n");
 
   DstM.setTargetTriple(SrcTriple.merge(DstTriple));

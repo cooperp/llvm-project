@@ -119,7 +119,7 @@ public:
 
   /// Return the Module's target triple.
   const std::string &getTargetTriple() {
-    return getModule().getTargetTriple();
+    return getModule().getTargetTriple().str();
   }
 
   /// Set the Module's target triple.

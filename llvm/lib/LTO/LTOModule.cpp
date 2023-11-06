@@ -200,7 +200,7 @@ LTOModule::makeLTOModule(MemoryBufferRef Buffer, const TargetOptions &options,
     return EC;
   std::unique_ptr<Module> &M = *MOrErr;
 
-  std::string TripleStr = M->getTargetTriple();
+  std::string TripleStr = M->getTargetTriple().str();
   if (TripleStr.empty())
     TripleStr = sys::getDefaultTargetTriple();
   llvm::Triple Triple(TripleStr);

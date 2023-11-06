@@ -540,7 +540,7 @@ static void setCommandLineOpts(const CodeGenOptions &CodeGenOpts) {
 void EmitAssemblyHelper::CreateTargetMachine(bool MustCreateTM) {
   // Create the TargetMachine for generating code.
   std::string Error;
-  std::string Triple = TheModule->getTargetTriple();
+  std::string Triple = TheModule->getTargetTriple().str();
   const llvm::Target *TheTarget = TargetRegistry::lookupTarget(Triple, Error);
   if (!TheTarget) {
     if (MustCreateTM)
@@ -1266,7 +1266,7 @@ void clang::EmitBackendOutput(DiagnosticsEngine &Diags,
       // the compilation as CombinedIndex does not contain all required
       // information.
       EmptyModule = std::make_unique<llvm::Module>("empty", M->getContext());
-      EmptyModule->setTargetTriple(M->getTargetTriple());
+      EmptyModule->setTargetTriple(M->getTargetTriple().str());
       M = EmptyModule.get();
     }
   }

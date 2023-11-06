@@ -590,7 +590,7 @@ int main(int argc, char **argv, char * const *envp) {
   // If the target is Cygwin/MingW and we are generating remote code, we
   // need an extra module to help out with linking.
   if (RemoteMCJIT && Triple(Mod->getTargetTriple()).isOSCygMing()) {
-    addCygMingExtraModule(*EE, Context, Mod->getTargetTriple());
+    addCygMingExtraModule(*EE, Context, Mod->getTargetTriple().str());
   }
 
   // The following functions have no effect if their respective profiling
@@ -838,7 +838,7 @@ int runOrcJIT(const char *ProgName) {
   std::optional<Triple> TT;
   std::optional<DataLayout> DL;
   MainModule.withModuleDo([&](Module &M) {
-      if (!M.getTargetTriple().empty())
+      if (!M.getTargetTriple().str().empty())
         TT = Triple(M.getTargetTriple());
       if (!M.getDataLayout().isDefault())
         DL = M.getDataLayout();

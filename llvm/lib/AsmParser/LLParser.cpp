@@ -354,7 +354,7 @@ bool LLParser::parseTargetDefinitions(DataLayoutCallbackTy DataLayoutCallback) {
   // Run the override callback to potentially change the data layout string, and
   // parse the data layout string.
   if (auto LayoutOverride =
-          DataLayoutCallback(M->getTargetTriple(), TentativeDLStr)) {
+          DataLayoutCallback(M->getTargetTriple().str(), TentativeDLStr)) {
     TentativeDLStr = *LayoutOverride;
     DLStrLoc = {};
   }
