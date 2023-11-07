@@ -599,7 +599,7 @@ bool ProfiledBinary::dissassembleSymbol(std::size_t SI, ArrayRef<uint8_t> Bytes,
 
 void ProfiledBinary::setUpDisassembler(const ELFObjectFileBase *Obj) {
   const Target *TheTarget = getTarget(Obj);
-  std::string TripleName = TheTriple.getTriple();
+  StringRef TripleName = TheTriple.getTriple();
   StringRef FileName = Obj->getFileName();
 
   MRI.reset(TheTarget->createMCRegInfo(TripleName));

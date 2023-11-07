@@ -791,7 +791,7 @@ struct TargetRegistry {
   /// \param Triple - The triple to use for finding a target.
   /// \param Error - On failure, an error string describing why no target was
   /// found.
-  static const Target *lookupTarget(const std::string &Triple,
+  static const Target *lookupTarget(StringRef Triple,
                                     std::string &Error);
 
   /// lookupTarget - Lookup a target based on an architecture name
@@ -805,7 +805,7 @@ struct TargetRegistry {
   /// by architecture is done.
   /// \param Error - On failure, an error string describing why no target was
   /// found.
-  static const Target *lookupTarget(const std::string &ArchName,
+  static const Target *lookupTarget(StringRef ArchName,
                                     Triple &TheTriple, std::string &Error);
 
   /// @}

@@ -39,7 +39,7 @@ bool DwarfStreamer::init(Triple TheTriple,
       TargetRegistry::lookupTarget(TripleName, TheTriple, ErrorStr);
   if (!TheTarget)
     return error(ErrorStr, Context), false;
-  TripleName = TheTriple.getTriple();
+  TripleName = TheTriple.getTriple().str();
 
   // Create all the MC Objects.
   MRI.reset(TheTarget->createMCRegInfo(TripleName));

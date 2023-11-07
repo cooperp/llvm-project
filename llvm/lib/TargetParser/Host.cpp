@@ -1886,7 +1886,7 @@ std::string sys::getProcessTriple() {
   if (sizeof(void *) == 4 && PT.isArch64Bit())
     PT = PT.get32BitArchVariant();
 
-  return PT.str();
+  return PT.str().str();
 }
 
 void sys::printDefaultTargetAndDetectedCPU(raw_ostream &OS) {

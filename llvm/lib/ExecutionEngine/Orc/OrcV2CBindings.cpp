@@ -831,7 +831,7 @@ char *LLVMOrcJITTargetMachineBuilderGetTargetTriple(
     LLVMOrcJITTargetMachineBuilderRef JTMB) {
   auto Tmp = unwrap(JTMB)->getTargetTriple().str();
   char *TargetTriple = (char *)malloc(Tmp.size() + 1);
-  strcpy(TargetTriple, Tmp.c_str());
+  strcpy(TargetTriple, Tmp.str().c_str());
   return TargetTriple;
 }
 
@@ -946,7 +946,7 @@ void LLVMOrcLLJITBuilderSetObjectLinkingLayerCreator(
       [=](ExecutionSession &ES, const Triple &TT) {
         auto TTStr = TT.str();
         return std::unique_ptr<ObjectLayer>(
-            unwrap(F(Ctx, wrap(&ES), TTStr.c_str())));
+            unwrap(F(Ctx, wrap(&ES), TTStr.str().c_str())));
       });
 }
 
@@ -983,7 +983,7 @@ LLVMOrcJITDylibRef LLVMOrcLLJITGetMainJITDylib(LLVMOrcLLJITRef J) {
 }
 
 const char *LLVMOrcLLJITGetTripleString(LLVMOrcLLJITRef J) {
-  return unwrap(J)->getTargetTriple().str().c_str();
+  return unwrap(J)->getTargetTriple().str().data();
 }
 
 char LLVMOrcLLJITGetGlobalPrefix(LLVMOrcLLJITRef J) {

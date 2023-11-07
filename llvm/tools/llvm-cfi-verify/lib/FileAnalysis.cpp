@@ -373,7 +373,7 @@ void FileAnalysis::printInstruction(const Instr &InstrMeta,
 }
 
 Error FileAnalysis::initialiseDisassemblyMembers() {
-  std::string TripleName = ObjectTriple.getTriple();
+  StringRef TripleName = ObjectTriple.getTriple();
   ArchName = "";
   MCPU = "";
   std::string ErrorString;

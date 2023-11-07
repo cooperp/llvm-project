@@ -245,7 +245,7 @@ static const Target *GetTarget(const char *ProgName) {
   }
 
   // Update the triple name and return the found target.
-  TripleName = TheTriple.getTriple();
+  TripleName = TheTriple.getTriple().str();
   return TheTarget;
 }
 

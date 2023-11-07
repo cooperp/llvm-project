@@ -189,7 +189,7 @@ std::string getClangClTriple() {
   T.setVendor(Triple::PC);
   T.setEnvironment(Triple::MSVC);
   T.setObjectFormat(Triple::COFF);
-  return T.str();
+  return T.str().str();
 }
 
 std::string getMingwTriple() {
@@ -197,7 +197,7 @@ std::string getMingwTriple() {
   if (!isUsableArch(T.getArch()))
     T.setArch(getDefaultFallbackArch());
   if (T.isWindowsGNUEnvironment())
-    return T.str();
+    return T.str().str();
   // Write out the literal form of the vendor/env here, instead of
   // constructing them with enum values (which end up with them in
   // normalized form). The literal form of the triple can matter for

@@ -790,7 +790,7 @@ static int linkAndVerify() {
   if (!TheTarget)
     ErrorAndExit("Error accessing target '" + TripleName + "': " + ErrorStr);
 
-  TripleName = TheTriple.getTriple();
+  TripleName = TheTriple.getTriple().str();
 
   std::unique_ptr<MCSubtargetInfo> STI(
     TheTarget->createMCSubtargetInfo(TripleName, MCPU, ""));

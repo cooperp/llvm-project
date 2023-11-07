@@ -21,7 +21,7 @@ iterator_range<TargetRegistry::iterator> TargetRegistry::targets() {
   return make_range(iterator(FirstTarget), iterator());
 }
 
-const Target *TargetRegistry::lookupTarget(const std::string &ArchName,
+const Target *TargetRegistry::lookupTarget(StringRef ArchName,
                                            Triple &TheTriple,
                                            std::string &Error) {
   // Allocate target machine.  First, check whether the user has explicitly
@@ -33,7 +33,7 @@ const Target *TargetRegistry::lookupTarget(const std::string &ArchName,
                      [&](const Target &T) { return ArchName == T.getName(); });
 
     if (I == targets().end()) {
-      Error = "invalid target '" + ArchName + "'.\n";
+      Error = (Twine("invalid target '") + ArchName + "'.\n").str();
       return nullptr;
     }
 
@@ -49,9 +49,9 @@ const Target *TargetRegistry::lookupTarget(const std::string &ArchName,
     std::string TempError;
     TheTarget = TargetRegistry::lookupTarget(TheTriple.getTriple(), TempError);
     if (!TheTarget) {
-      Error = "unable to get target for '"
+      Error = (Twine("unable to get target for '")
             + TheTriple.getTriple()
-            + "', see --version and --triple.\n";
+            + "', see --version and --triple.\n").str();
       return nullptr;
     }
   }
@@ -59,7 +59,7 @@ const Target *TargetRegistry::lookupTarget(const std::string &ArchName,
   return TheTarget;
 }
 
-const Target *TargetRegistry::lookupTarget(const std::string &TT,
+const Target *TargetRegistry::lookupTarget(StringRef TT,
                                            std::string &Error) {
   // Provide special warning when no targets are initialized.
   if (targets().begin() == targets().end()) {
@@ -71,7 +71,7 @@ const Target *TargetRegistry::lookupTarget(const std::string &TT,
   auto I = find_if(targets(), ArchMatch);
 
   if (I == targets().end()) {
-    Error = "No available targets are compatible with triple \"" + TT + "\"";
+    Error = Twine("No available targets are compatible with triple \"" + TT + "\"").str();
     return nullptr;
   }
 

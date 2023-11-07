@@ -254,7 +254,7 @@ const Target *getTarget(const char *ProgName) {
   }
 
   // Update TripleName with the updated triple from the target lookup.
-  TripleName = TheTriple.str();
+  TripleName = TheTriple.str().str();
 
   // Return the found target.
   return TheTarget;

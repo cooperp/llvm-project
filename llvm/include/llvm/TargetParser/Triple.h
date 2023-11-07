@@ -9,6 +9,7 @@
 #ifndef LLVM_TARGETPARSER_TRIPLE_H
 #define LLVM_TARGETPARSER_TRIPLE_H
 
+#include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/VersionTuple.h"
 
@@ -291,7 +292,7 @@ public:
   };
 
 private:
-  std::string Data;
+  SmallString<64> Data;
 
   /// The parsed arch type.
   ArchType Arch{};
@@ -412,9 +413,9 @@ public:
   /// @name Direct Component Access
   /// @{
 
-  const std::string &str() const { return Data; }
+  StringRef str() const { return Data; }
 
-  const std::string &getTriple() const { return Data; }
+  StringRef getTriple() const { return Data; }
 
   /// Get the architecture (first) component of the triple.
   StringRef getArchName() const;

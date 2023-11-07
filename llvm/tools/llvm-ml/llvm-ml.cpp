@@ -280,7 +280,7 @@ int main(int Argc, char **Argv) {
     WithColor::error(errs(), ProgName) << Error;
     return 1;
   }
-  const std::string &TripleName = TheTriple.getTriple();
+  StringRef TripleName = TheTriple.getTriple();
 
   bool SafeSEH = InputArgs.hasArg(OPT_safeseh);
   if (SafeSEH && !(TheTriple.isArch32Bit() && TheTriple.isX86())) {

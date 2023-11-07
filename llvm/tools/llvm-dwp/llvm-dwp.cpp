@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
       TargetRegistry::lookupTarget("", *ErrOrTriple, ErrorStr);
   if (!TheTarget)
     return error(ErrorStr, Context);
-  std::string TripleName = ErrOrTriple->getTriple();
+  std::string TripleName = ErrOrTriple->getTriple().str();
 
   // Create all the MC Objects.
   std::unique_ptr<MCRegisterInfo> MRI(TheTarget->createMCRegInfo(TripleName));

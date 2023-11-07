@@ -219,7 +219,7 @@ static void failIfNotEmpty(const llvm::Twine &E) {
 
 template <typename T>
 static void failIfEmpty(const std::unique_ptr<T> &Ptr,
-                        const std::string &Message) {
+                        const llvm::Twine &Message) {
   if (Ptr.get())
     return;
   fail(Message);
