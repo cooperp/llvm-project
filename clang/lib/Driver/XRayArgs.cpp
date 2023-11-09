@@ -49,13 +49,13 @@ XRayArgs::XRayArgs(const ToolChain &TC, const ArgList &Args) {
       break;
     default:
       D.Diag(diag::err_drv_clang_unsupported)
-          << (std::string(XRayInstrumentOption) + " on " + Triple.str());
+          << (std::string(XRayInstrumentOption) + " on " + Triple.str().str());
     }
   } else if (Triple.isOSFreeBSD() || Triple.isOSOpenBSD() ||
              Triple.isOSNetBSD() || Triple.isMacOSX()) {
     if (Triple.getArch() != llvm::Triple::x86_64) {
       D.Diag(diag::err_drv_clang_unsupported)
-          << (std::string(XRayInstrumentOption) + " on " + Triple.str());
+          << (std::string(XRayInstrumentOption) + " on " + Triple.str().str());
     }
   } else if (Triple.getOS() == llvm::Triple::Fuchsia) {
     switch (Triple.getArch()) {
@@ -64,11 +64,11 @@ XRayArgs::XRayArgs(const ToolChain &TC, const ArgList &Args) {
       break;
     default:
       D.Diag(diag::err_drv_clang_unsupported)
-          << (std::string(XRayInstrumentOption) + " on " + Triple.str());
+          << (std::string(XRayInstrumentOption) + " on " + Triple.str().str());
     }
   } else {
     D.Diag(diag::err_drv_clang_unsupported)
-        << (std::string(XRayInstrumentOption) + " on " + Triple.str());
+        << (std::string(XRayInstrumentOption) + " on " + Triple.str().str());
   }
 
   // Both XRay and -fpatchable-function-entry use

@@ -531,7 +531,7 @@ StmtResult Parser::ParseMicrosoftAsmStatement(SourceLocation AsmLoc) {
 
   // We need an actual supported target.
   const llvm::Triple &TheTriple = Actions.Context.getTargetInfo().getTriple();
-  const std::string &TT = TheTriple.getTriple();
+  StringRef TT = TheTriple.getTriple();
   const llvm::Target *TheTarget = nullptr;
   if (!TheTriple.isX86()) {
     Diag(AsmLoc, diag::err_msasm_unsupported_arch) << TheTriple.getArchName();

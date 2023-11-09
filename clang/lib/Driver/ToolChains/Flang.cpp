@@ -294,7 +294,7 @@ void Flang::ConstructJob(Compilation &C, const JobAction &JA,
                          const ArgList &Args, const char *LinkingOutput) const {
   const auto &TC = getToolChain();
   const llvm::Triple &Triple = TC.getEffectiveTriple();
-  const std::string &TripleStr = Triple.getTriple();
+  StringRef TripleStr = Triple.getTriple();
 
   const Driver &D = TC.getDriver();
   ArgStringList CmdArgs;

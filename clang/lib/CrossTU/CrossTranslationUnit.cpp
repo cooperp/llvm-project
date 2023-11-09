@@ -308,7 +308,7 @@ llvm::Expected<const T *> CrossTranslationUnitContext::getCrossTUDefinitionImpl(
     ++NumTripleMismatch;
     return llvm::make_error<IndexError>(index_error_code::triple_mismatch,
                                         std::string(Unit->getMainFileName()),
-                                        TripleTo.str(), TripleFrom.str());
+                                        TripleTo.str().str(), TripleFrom.str().str());
   }
 
   const auto &LangTo = Context.getLangOpts();

@@ -810,7 +810,7 @@ MSVCToolChain::ComputeEffectiveClangTriple(const ArgList &Args,
       Triple.setEnvironmentName(
           (Twine("msvc") + MSVT.getAsString() + Twine('-') + ObjFmt).str());
   }
-  return Triple.getTriple();
+  return Triple.getTriple().str();
 }
 
 SanitizerMask MSVCToolChain::getSupportedSanitizers() const {

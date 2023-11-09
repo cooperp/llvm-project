@@ -803,7 +803,8 @@ void Driver::CreateOffloadingDeviceToolChains(Compilation &C,
       return;
     // Use the CUDA and host triples as the key into the ToolChains map,
     // because the device toolchain we create depends on both.
-    auto &CudaTC = ToolChains[CudaTriple->str() + "/" + HostTriple.str()];
+    auto TT = (CudaTriple->str() + "/" + HostTriple.str()).str();
+    auto &CudaTC = ToolChains[TT];
     if (!CudaTC) {
       CudaTC = std::make_unique<toolchains::CudaToolChain>(
           *this, *CudaTriple, *HostTC, C.getInputArgs());
@@ -947,7 +948,7 @@ void Driver::CreateOffloadingDeviceToolChains(Compilation &C,
               C.getSingleOffloadToolChain<Action::OFK_Host>();
           assert(HostTC && "Host toolchain should be always defined.");
           auto &DeviceTC =
-              ToolChains[TT.str() + "/" + HostTC->getTriple().normalize()];
+              ToolChains[TT.str().str() + "/" + HostTC->getTriple().normalize()];
           if (!DeviceTC) {
             if (TT.isNVPTX())
               DeviceTC = std::make_unique<toolchains::CudaToolChain>(
@@ -6222,7 +6223,8 @@ const ToolChain &Driver::getOffloadingDeviceToolChain(
     const Action::OffloadKind &TargetDeviceOffloadKind) const {
   // Use device / host triples as the key into the ToolChains map because the
   // device ToolChain we create depends on both.
-  auto &TC = ToolChains[Target.str() + "/" + HostTC.getTriple().str()];
+  std::string Key = (Target.str() + "/" + HostTC.getTriple().str()).str();
+  auto &TC = ToolChains[Key];
   if (!TC) {
     // Categorized by offload kind > arch rather than OS > arch like
     // the normal getToolChain call, as it seems a reasonable way to categorize

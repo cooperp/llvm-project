@@ -3294,7 +3294,7 @@ static void RenderSSPOptions(const Driver &D, const ToolChain &TC,
     }
   }
 
-  const std::string &TripleStr = EffectiveTriple.getTriple();
+  StringRef TripleStr = EffectiveTriple.getTriple();
   if (Arg *A = Args.getLastArg(options::OPT_mstack_protector_guard_EQ)) {
     StringRef Value = A->getValue();
     if (!EffectiveTriple.isX86() && !EffectiveTriple.isAArch64() &&
@@ -4496,7 +4496,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   const auto &TC = getToolChain();
   const llvm::Triple &RawTriple = TC.getTriple();
   const llvm::Triple &Triple = TC.getEffectiveTriple();
-  const std::string &TripleStr = Triple.getTriple();
+  StringRef TripleStr = Triple.getTriple();
 
   bool KernelOrKext =
       Args.hasArg(options::OPT_mkernel, options::OPT_fapple_kext);
@@ -7914,7 +7914,7 @@ void ClangAs::ConstructJob(Compilation &C, const JobAction &JA,
   const InputInfo &Input = Inputs[0];
 
   const llvm::Triple &Triple = getToolChain().getEffectiveTriple();
-  const std::string &TripleStr = Triple.getTriple();
+  StringRef TripleStr = Triple.getTriple();
   const auto &D = getToolChain().getDriver();
 
   // Don't warn about "clang -w -c foo.s"

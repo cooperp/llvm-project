@@ -105,7 +105,7 @@ std::optional<std::string> tryParseProfile(StringRef Profile) {
               VersionTuple(Major, Minor).getAsString());
   T.setEnvironment(Kind);
   if (isLegalShaderModel(T))
-    return T.getTriple();
+    return T.getTriple().str();
   else
     return std::nullopt;
 }

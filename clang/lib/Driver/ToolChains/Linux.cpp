@@ -132,7 +132,7 @@ std::string Linux::getMultiarchTriple(const Driver &D,
   case llvm::Triple::systemz:
     return "s390x-linux-gnu";
   }
-  return TargetTriple.str();
+  return TargetTriple.str().str();
 }
 
 static StringRef getOSLibDir(const llvm::Triple &Triple, const ArgList &Args) {
@@ -570,7 +570,7 @@ std::string Linux::getDynamicLinker(const ArgList &Args) const {
   if (Distro == Distro::Exherbo &&
       (Triple.getVendor() == llvm::Triple::UnknownVendor ||
        Triple.getVendor() == llvm::Triple::PC))
-    return "/usr/" + Triple.str() + "/lib/" + Loader;
+    return "/usr/" + Triple.str().str() + "/lib/" + Loader;
   return "/" + LibDir + "/" + Loader;
 }
 

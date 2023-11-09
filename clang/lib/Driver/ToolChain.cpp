@@ -817,7 +817,7 @@ std::string ToolChain::ComputeLLVMTriple(const ArgList &Args,
       if (MArch == "x86_64h")
         Triple.setArchName(MArch);
     }
-    return Triple.getTriple();
+    return Triple.getTriple().str();
   }
   case llvm::Triple::aarch64: {
     llvm::Triple Triple = getTriple();
@@ -831,7 +831,7 @@ std::string ToolChain::ComputeLLVMTriple(const ArgList &Args,
     // triple string and query it to determine whether an LTO file can be
     // handled. Remove this when we don't care any more.
     Triple.setArchName("arm64");
-    return Triple.getTriple();
+    return Triple.getTriple().str();
   }
   case llvm::Triple::aarch64_32:
     return getTripleString();
@@ -842,7 +842,7 @@ std::string ToolChain::ComputeLLVMTriple(const ArgList &Args,
     llvm::Triple Triple = getTriple();
     tools::arm::setArchNameInTriple(getDriver(), Args, InputType, Triple);
     tools::arm::setFloatABIInTriple(getDriver(), Args, Triple);
-    return Triple.getTriple();
+    return Triple.getTriple().str();
   }
   }
 }

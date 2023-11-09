@@ -339,8 +339,8 @@ int main(int argc, const char **argv) {
       reportError(createStringError(errc::invalid_argument, Msg.str()));
     }
 
-    TargetIDs[OffloadInfo.OffloadKind.str() + "-" + OffloadInfo.Triple.str()]
-        .insert(OffloadInfo.TargetID);
+    auto TT = (OffloadInfo.OffloadKind.str() + "-" + OffloadInfo.Triple.str()).str();
+    TargetIDs[TT].insert(OffloadInfo.TargetID);
     if (KindIsValid && OffloadInfo.hasHostKind()) {
       ++HostTargetNum;
       // Save the index of the input that refers to the host.

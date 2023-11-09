@@ -259,7 +259,7 @@ public:
   StringRef getDefaultUniversalArchName() const;
 
   std::string getTripleString() const {
-    return Triple.getTriple();
+    return Triple.getTriple().str();
   }
 
   /// Get the toolchain's effective clang triple.
@@ -594,7 +594,7 @@ public:
   virtual std::string getMultiarchTriple(const Driver &D,
                                          const llvm::Triple &TargetTriple,
                                          StringRef SysRoot) const {
-    return TargetTriple.str();
+    return TargetTriple.str().str();
   }
 
   /// ComputeLLVMTriple - Return the LLVM target triple to use, after taking

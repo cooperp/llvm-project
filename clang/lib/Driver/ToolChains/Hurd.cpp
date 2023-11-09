@@ -41,7 +41,7 @@ std::string Hurd::getMultiarchTriple(const Driver &D,
 
   // For most architectures, just use whatever we have rather than trying to be
   // clever.
-  return TargetTriple.str();
+  return TargetTriple.str().str();
 }
 
 static StringRef getOSLibDir(const llvm::Triple &Triple, const ArgList &Args) {

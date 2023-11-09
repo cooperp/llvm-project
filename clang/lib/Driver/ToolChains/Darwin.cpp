@@ -1045,7 +1045,7 @@ std::string Darwin::ComputeEffectiveClangTriple(const ArgList &Args,
   // If the target isn't initialized (e.g., an unknown Darwin platform, return
   // the default triple).
   if (!isTargetInitialized())
-    return Triple.getTriple();
+    return Triple.getTriple().str();
 
   SmallString<16> Str;
   if (isTargetWatchOSBased())
@@ -1061,7 +1061,7 @@ std::string Darwin::ComputeEffectiveClangTriple(const ArgList &Args,
   Str += getTripleTargetVersion().getAsString();
   Triple.setOSName(Str);
 
-  return Triple.getTriple();
+  return Triple.getTriple().str();
 }
 
 Tool *MachO::getTool(Action::ActionClass AC) const {

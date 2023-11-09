@@ -111,7 +111,7 @@ std::string OHOS::getMultiarchTriple(const llvm::Triple &T) const {
   case llvm::Triple::aarch64:
     return "aarch64-linux-ohos";
   }
-  return T.str();
+  return T.str().str();
 }
 
 std::string OHOS::getMultiarchTriple(const Driver &D,

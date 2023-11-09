@@ -360,7 +360,7 @@ NaClToolChain::ComputeEffectiveClangTriple(const ArgList &Args,
   if (TheTriple.getArch() == llvm::Triple::arm &&
       TheTriple.getEnvironment() == llvm::Triple::UnknownEnvironment)
     TheTriple.setEnvironment(llvm::Triple::GNUEABIHF);
-  return TheTriple.getTriple();
+  return TheTriple.getTriple().str();
 }
 
 Tool *NaClToolChain::buildLinker() const {
