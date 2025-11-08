@@ -5736,6 +5736,17 @@ option.
     }];
 }
 
+def StackProtectorIgnoreDocs : Documentation {
+  let Category = DocCatFunction;
+  let Content = [{
+The ``stack_protector_ignore`` attribute skips analysis of the given local
+variable when determining if a function should use a stack protector.
+
+If ``-fstack-protector-all`` is specified then the given function will still
+use a stack protector, even if some/all variables have this attribute.
+  }];
+}
+
 def StrictGuardStackCheckDocs : Documentation {
   let Category = DocCatFunction;
   let Content = [{

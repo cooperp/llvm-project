@@ -387,6 +387,11 @@ Attribute Changes in Clang
   multilibs for printf features. Requires cooperation with the libc
   implementation.
 
+- Added new attribute ``stack_protector_ignore`` to opt specific local variables out of
+  the analysis which determines if a function should get a stack protector.  A function
+  will still generate a stack protector if other local variables or command line flags
+  require it.
+
 - On targets with Itanium C++ ABI, Clang now supports ``[[gnu:gcc_struct]]``
   with the behavior similar to one existing in GCC. In particular, whenever
   ``-mms-bitfields`` command line option is provided (or if Microsoft-compatible

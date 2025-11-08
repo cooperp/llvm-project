@@ -1679,6 +1679,15 @@ void CodeGenFunction::EmitReturnStmt(const ReturnStmt &S) {
     // that the cleanup code should not destroy the variable.
     if (llvm::Value *NRVOFlag = NRVOFlags[S.getNRVOCandidate()])
       Builder.CreateFlagStore(Builder.getTrue(), NRVOFlag);
+
+    if (S.getNRVOCandidate()->hasAttr<StackProtectorIgnoreAttr>()) {
+      if (auto *AI = dyn_cast<llvm::AllocaInst>(ReturnValue.getBasePointer())) {
+        llvm::LLVMContext &Ctx = Builder.getContext();
+        auto *Operand = llvm::ConstantAsMetadata::get(Builder.getInt32(0));
+        AI->setMetadata("stack-protector", llvm::MDNode::get(Ctx, {Operand}));
+      }
+    }
+
   } else if (!ReturnValue.isValid() || (RV && RV->getType()->isVoidType())) {
     // Make sure not to return anything, but evaluate the expression
     // for side effects.

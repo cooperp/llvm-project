@@ -1604,6 +1604,14 @@ CodeGenFunction::EmitAutoVarAlloca(const VarDecl &D) {
                                  allocaAlignment, D.getName(),
                                  /*ArraySize=*/nullptr, &AllocaAddr);
 
+      if (D.hasAttr<StackProtectorIgnoreAttr>()) {
+        if (auto *AI = dyn_cast<llvm::AllocaInst>(address.getBasePointer())) {
+          llvm::LLVMContext &Ctx = Builder.getContext();
+          auto *Operand = llvm::ConstantAsMetadata::get(Builder.getInt32(0));
+          AI->setMetadata("stack-protector", llvm::MDNode::get(Ctx, {Operand}));
+        }
+      }
+
       // Don't emit lifetime markers for MSVC catch parameters. The lifetime of
       // the catch parameter starts in the catchpad instruction, and we can't
       // insert code in those basic blocks.
