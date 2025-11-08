@@ -133,7 +133,7 @@
 // CHECK-NEXT: NoSanitizeThread (SubjectMatchRule_function)
 // CHECK-NEXT: NoSpeculativeLoadHardening (SubjectMatchRule_function, SubjectMatchRule_objc_method)
 // CHECK-NEXT: NoSplitStack (SubjectMatchRule_function)
-// CHECK-NEXT: NoStackProtector (SubjectMatchRule_function)
+// CHECK-NEXT: NoStackProtector (SubjectMatchRule_function, SubjectMatchRule_variable_is_local)
 // CHECK-NEXT: NoThreadSafetyAnalysis (SubjectMatchRule_function)
 // CHECK-NEXT: NoThrow (SubjectMatchRule_hasType_functionType)
 // CHECK-NEXT: NoUwtable (SubjectMatchRule_hasType_functionType)

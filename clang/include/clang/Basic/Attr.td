@@ -2724,7 +2724,7 @@ def : MutualExclusions<[AlwaysInline, NotTailCalled]>;
 def NoStackProtector : InheritableAttr {
   let Spellings = [Clang<"no_stack_protector">, CXX11<"gnu", "no_stack_protector">,
                    C23<"gnu", "no_stack_protector">, Declspec<"safebuffers">];
-  let Subjects = SubjectList<[Function]>;
+  let Subjects = SubjectList<[Function, LocalVar]>;
   let Documentation = [NoStackProtectorDocs];
   let SimpleHandler = 1;
 }
